@@ -540,13 +540,13 @@ public class GridTool
             if (_useSelectionPosition && Selection.activeTransform)
             {
                 // The position of the grid is set and the _gridOffset is added.
-                position = SnapToGrid(Selection.activeTransform) + _gridOffset;
+                position = SnapToGrid(Selection.activeTransform) /*+ _gridOffset*/;
             }
             // If _useSelectionPosition is false or if no object with a transform component is selected...
             else
             {
                 // The position of the grid is set to Vector3.zero + the offset.
-                position = Vector3.zero + _gridOffset;
+                position = Vector3.zero /*+ _gridOffset*/;
             }
 
             // Each line is adde to the correct list.
@@ -604,9 +604,9 @@ public class GridTool
     {
         return new Vector3
         (
-        _incrementSize * Mathf.Round(activeTransform.position.x / _incrementSize),
-        _incrementSize * Mathf.Round(activeTransform.position.y / _incrementSize),
-        _incrementSize * Mathf.Round(activeTransform.position.z / _incrementSize)
+        _incrementSize * Mathf.Round(activeTransform.position.x - _gridOffset.x / _incrementSize) + _gridOffset.x,
+        _incrementSize * Mathf.Round(activeTransform.position.y - _gridOffset.y / _incrementSize) + _gridOffset.y,
+        _incrementSize * Mathf.Round(activeTransform.position.z - _gridOffset.z / _incrementSize) + _gridOffset.z
         );
     }
 
@@ -624,21 +624,21 @@ public class GridTool
         if (oldPosition.x != activeTransform.position.x)
         {
             // Snap the x-component of the snapPos vector to the grid.
-            snapPos.x = _incrementSize * Mathf.Round(activeTransform.position.x / _incrementSize);
+            snapPos.x = _incrementSize * Mathf.Round(activeTransform.position.x - _gridOffset.x / _incrementSize) + _gridOffset.x;
         }
 
         // If the y-position of the active transform is not the old y-Position... 
         if (oldPosition.y != activeTransform.position.y)
         {
             // Snap the y-component of the snapPos vector to the grid.
-            snapPos.y = _incrementSize * Mathf.Round(activeTransform.position.y / _incrementSize);
+            snapPos.y = _incrementSize * Mathf.Round(activeTransform.position.y - _gridOffset.y / _incrementSize) + _gridOffset.y;
         }
 
         // If the z-position of the active transform is not the old z-Position... 
         if (oldPosition.z != activeTransform.position.z)
         {
             // Snap the z-component of the snapPos vector to the grid.
-            snapPos.z = _incrementSize * Mathf.Round(activeTransform.position.z / _incrementSize);
+            snapPos.z = _incrementSize * Mathf.Round(activeTransform.position.z - _gridOffset.z / _incrementSize) + _gridOffset.z;
         }
 
         // Returns snapPos.
