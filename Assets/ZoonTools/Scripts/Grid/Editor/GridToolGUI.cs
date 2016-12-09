@@ -25,7 +25,7 @@ public class GridToolGUI
     /// <summary>
     /// Adds a menu item to the unity editor.
     /// </summary>
-    [MenuItem("Grid/Toggle Grid")]
+    [MenuItem("ZoonTools/Toggle Grid", false, 1)]
     static void ToggleGrid()
     {
         // Toggles the value of the variable enableGridTool.
@@ -64,22 +64,22 @@ public class GridToolGUI
     static GridToolGUI()
     {
         // Subscribes the method OnSceneGUI to the SceneView.onsceneGUIDelegate.
-        SceneView.onSceneGUIDelegate += OnSceneGUI;
+        //SceneView.onSceneGUIDelegate += OnSceneGUI;
 
         // Loads the GUI that should be used to draw the GUI.
-        guiSkin = AssetDatabase.LoadAssetAtPath<GUISkin>("Assets/Editor/GUI/GridToolGUISkin.guiskin");
+        guiSkin = AssetDatabase.LoadAssetAtPath<GUISkin>("Assets/ZoonTools/GUI/Grid/GridToolGUISkin.guiskin");
 
         // Loads the textures of all the buttons.
-        toggleGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleGrid.png");
-        toggleXYGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleGridBlue.png");
-        toggleXZGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleGridGreen.png");
-        toggleYZGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleGridRed.png");
+        toggleGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleGrid.png");
+        toggleXYGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleGridBlue.png");
+        toggleXZGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleGridGreen.png");
+        toggleYZGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleGridRed.png");
 
-        toggleSnapObjectToGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleGridSnapping.png");
-        toggleSnapAxisOnlyTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleAxisSnap.png");
-        toggleShowStartPositionTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleStartPosition.png");
-        toggleUseSelectionPositionTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleRepositionGrid.png");
-        toggleIndividualSnappingTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/Editor/GUI/Grid/ToggleIndividualSnapping.png");
+        toggleSnapObjectToGridTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleGridSnapping.png");
+        toggleSnapAxisOnlyTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleAxisSnap.png");
+        toggleShowStartPositionTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleStartPosition.png");
+        toggleUseSelectionPositionTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleRepositionGrid.png");
+        toggleIndividualSnappingTexture = AssetDatabase.LoadAssetAtPath<Texture>("Assets/ZoonTools/GUI/Grid/ToggleIndividualSnapping.png");
     }
 
     /// <summary>

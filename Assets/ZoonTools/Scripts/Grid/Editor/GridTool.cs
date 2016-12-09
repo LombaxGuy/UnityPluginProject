@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
 using System.Collections.Generic;
 
 [InitializeOnLoad]
 public class GridTool
 {
     // Is the tool enabled or disabled.
-    private static bool enableGridTool = true;
+    private static bool enableGridTool = false;
 
     // Configuarable setting shown in the toolbar.
     private static bool _showGrid = true;
@@ -168,7 +167,7 @@ public class GridTool
         gridSize = 100 * _incrementSize;
 
         // Updates the grid's lines.
-        UpdateGridLines();
+        //UpdateGridLines();
     }
 
     /// <summary>
@@ -227,7 +226,7 @@ public class GridTool
                         // If _allignAllSelectedWithGrid is true all objects in the list will snap to the grid.
                         if (_allignAllSelectedWithGrid)
                         {
-                            selectedGameObjects[i].transform.position = SnapToGrid(selectedGameObjects[i].transform);
+                            selectedGameObjects[i].transform.position = SnapToGrid(selectedGameObjects[i].transform.position);
                         }
                         // If _allignAllSelectedWithGrid is false only the active selection will snap to the grid and all other objects will move relative to the active selection.
                         else
@@ -235,12 +234,12 @@ public class GridTool
                             // If the current object is not the active selection we snap to the grid and add the relative position stored in selectedRelativePositions.
                             if (selectedGameObjects[i].transform != activeTrans)
                             {
-                                selectedGameObjects[i].transform.position = SnapToGrid(activeTrans) + selectedRelativePositions[i];
+                                selectedGameObjects[i].transform.position = SnapToGrid(activeTrans.position) + selectedRelativePositions[i];
                             }
                             // If the current object is the active selection we just snap to the grid.
                             else
                             {
-                                activeTrans.position = SnapToGrid(activeTrans);
+                                activeTrans.position = SnapToGrid(activeTrans.position);
                             }
                         }
                     }
@@ -270,6 +269,7 @@ public class GridTool
 
                 // Updates the grid's lines.
                 UpdateGridLines();
+
                 break;
 
             // If the current event is a MouseDown event...
@@ -295,6 +295,7 @@ public class GridTool
                 {
                     // Update the grid's lines.
                     UpdateGridLines();
+
                 }
                 break;
         }
@@ -520,8 +521,8 @@ public class GridTool
     /// </summary>
     public static void UpdateGridLines()
     {
-        // If _showGrid is true the lines are updated.
-        if (_showGrid)
+        // If _showGrid is true and enableGridTool is true the lines are updated.
+        if (_showGrid && enableGridTool)
         {
             // Sets the gridSize and the girdSectionSize
             gridSize = 100 * _incrementSize;
@@ -540,7 +541,7 @@ public class GridTool
             if (_useSelectionPosition && Selection.activeTransform)
             {
                 // The position of the grid is set and the _gridOffset is added.
-                position = SnapToGrid(Selection.activeTransform) /*+ _gridOffset*/;
+                position = SnapToGrid(Selection.activeTransform.position) /*+ _gridOffset*/;
             }
             // If _useSelectionPosition is false or if no object with a transform component is selected...
             else
@@ -584,29 +585,42 @@ public class GridTool
     /// </summary>
     public static void UpdateSelectionArrays()
     {
-        // Sets the two arrays for used for snapping.
-        selectedGameObjects = Selection.gameObjects;
-        selectedRelativePositions = new Vector3[selectedGameObjects.Length];
-
-        // Calculates the position of all the selected object relative to the active selection and saves it in an array.
-        for (int i = 0; i < selectedRelativePositions.Length; i++)
+        // If enableGridTool is true the selection arrays are updated.
+        if (enableGridTool)
         {
-            selectedRelativePositions[i] = Selection.activeTransform.InverseTransformPoint(selectedGameObjects[i].transform.position);
+            // Sets the two arrays for used for snapping.
+            selectedGameObjects = Selection.gameObjects;
+
+            if (selectedGameObjects != null)
+            {
+                selectedRelativePositions = new Vector3[selectedGameObjects.Length];
+            }
+            else
+            {
+                selectedRelativePositions = new Vector3[0];
+            }
+
+
+            // Calculates the position of all the selected object relative to the active selection and saves it in an array.
+            for (int i = 0; i < selectedRelativePositions.Length; i++)
+            {
+                selectedRelativePositions[i] = Selection.activeTransform.InverseTransformPoint(selectedGameObjects[i].transform.position);
+            }
         }
     }
 
     /// <summary>
     /// Returns a Vector3 that is "On grid" based on the activeTransform's position.
     /// </summary>
-    /// <param name="activeTransform">The transform which position will be used.</param>
+    /// <param name="position">The position which will be used.</param>
     /// <returns>Returns a Vector3 which x, y and z components are all multiples of _incrementSize.</returns>
-    private static Vector3 SnapToGrid(Transform activeTransform)
+    public static Vector3 SnapToGrid(Vector3 position)
     {
         return new Vector3
         (
-        _incrementSize * Mathf.Round(activeTransform.position.x - _gridOffset.x / _incrementSize) + _gridOffset.x,
-        _incrementSize * Mathf.Round(activeTransform.position.y - _gridOffset.y / _incrementSize) + _gridOffset.y,
-        _incrementSize * Mathf.Round(activeTransform.position.z - _gridOffset.z / _incrementSize) + _gridOffset.z
+        _incrementSize * Mathf.Round(position.x - _gridOffset.x / _incrementSize) + _gridOffset.x,
+        _incrementSize * Mathf.Round(position.y - _gridOffset.y / _incrementSize) + _gridOffset.y,
+        _incrementSize * Mathf.Round(position.z - _gridOffset.z / _incrementSize) + _gridOffset.z
         );
     }
 

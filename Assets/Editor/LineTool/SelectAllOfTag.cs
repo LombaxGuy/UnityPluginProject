@@ -20,7 +20,7 @@ public class SelectAllOfTag : ScriptableWizard {
     public float incrimentDist;
 
 
-    [MenuItem("My Tools/Select All Of Tag %#g")]
+    [MenuItem("ZoonTools/Select All Of Tag %#g", false, 51)]
     static void SelectAllOfTAgWizard()
     {       
      ScriptableWizard.DisplayWizard<SelectAllOfTag>("SelectAll Of Tag", "Spawn","SetPos");
