@@ -2,19 +2,26 @@
 using UnityEditor;
 using System.Collections;
 
-public enum DirectionEnum { Up, Down, Left, Right, Forward, Back }
+public enum DirectionEnum { Down, Up, Left, Right, Forward, Back }
 
 public class GroundObjectsTool : EditorWindow
 {
-    static private GameObject[] objects;
+    private static GameObject[] selectedObjects;
+    private static Vector3[] groundedPositions;
+    private static Quaternion[] groundedRotations;
+    private static Mesh[] groundedMeshes;
+    private static bool[] foundGround;
 
-    private DirectionEnum allignWithObjectVector = DirectionEnum.Up;
+    private Vector3 groundDir = Vector3.down;
 
-    static private bool showGroundedPreview = true;
-    private bool checkAboveObject = false;
-    private bool attempToPlaceOnGroundAbove = false;
+    private DirectionEnum groundInDirection = DirectionEnum.Down;
+
+    private static bool showGroundedPreview = true;
+    private bool deselectObjectsOnFinish = true;
 
     private bool corectPositionsToGrid = false;
+
+    private static float noMeshCircleRadius = 1.0f;
 
     [MenuItem("ZoonTools/Ground Objects", false, 103)]
     private static void Init()
@@ -25,19 +32,56 @@ public class GroundObjectsTool : EditorWindow
 
     private void OnEnable()
     {
-        Selection.selectionChanged += OnSelectionChange;
+        SceneView.onSceneGUIDelegate += OnSceneGUI;
 
-        objects = Selection.gameObjects;
+        selectedObjects = Selection.gameObjects;
+
+        UpdatePreviews();
     }
 
     private void OnDisable()
     {
-        Selection.selectionChanged -= OnSelectionChange;
+        SceneView.onSceneGUIDelegate -= OnSceneGUI;
+
+        ClearArrays();
     }
 
     private void OnInspectorUpdate()
     {
         Repaint();
+
+        switch (groundInDirection)
+        {
+            case DirectionEnum.Up:
+                groundDir = Vector3.up;
+                break;
+
+            case DirectionEnum.Down:
+                groundDir = Vector3.down;
+                break;
+
+            case DirectionEnum.Left:
+                groundDir = Vector3.left;
+                break;
+
+            case DirectionEnum.Right:
+                groundDir = Vector3.right;
+                break;
+
+            case DirectionEnum.Forward:
+                groundDir = Vector3.forward;
+                break;
+
+            case DirectionEnum.Back:
+                groundDir = Vector3.back;
+                break;
+
+            default:
+                groundDir = Vector3.down;
+                break;
+        }
+
+        UpdatePreviews();
     }
 
     private void OnGUI()
@@ -45,25 +89,11 @@ public class GroundObjectsTool : EditorWindow
         EditorGUILayout.LabelField("This tool allows for easy placement of objects on surfaces.");
         GUILayout.Label("Settings", EditorStyles.boldLabel);
 
+        EditorGUI.BeginChangeCheck();
+
         showGroundedPreview = EditorGUILayout.Toggle(new GUIContent("Show Preview", "When this option is on a preview of the grounded objects objects will be shown in the Scene View."), showGroundedPreview);
 
-        checkAboveObject = EditorGUILayout.Toggle(new GUIContent("Check Above Object", "The tool always looks for ground under the object. This option will allow you to check above the object too."), checkAboveObject);
-
-        if (checkAboveObject)
-        {
-            attempToPlaceOnGroundAbove = EditorGUILayout.Toggle(new GUIContent("Place On Ceiling", "Places the objects upside down on the ceiling if no ground could be found."), attempToPlaceOnGroundAbove);
-        }
-        else
-        {
-            Color oldColor = GUI.color;
-            GUI.color = Color.gray;
-
-            EditorGUILayout.LabelField(new GUIContent("Place On Ceiling", "Turn on 'Check Above Object' to enable this option."));
-            attempToPlaceOnGroundAbove = false;
-
-            GUI.color = oldColor;
-        }
-
+        deselectObjectsOnFinish = EditorGUILayout.Toggle(new GUIContent("Deselect on finish", "When objects are grounded they are automatically deselected in the editor."), deselectObjectsOnFinish);
 
         if (GridTool.EnableGridTool)
         {
@@ -80,61 +110,169 @@ public class GroundObjectsTool : EditorWindow
             GUI.color = oldColor;
         }
 
-        allignWithObjectVector = (DirectionEnum)EditorGUILayout.EnumPopup(new GUIContent("Face Up", "The local direction vector of the object that will face away form the surface."), allignWithObjectVector, EditorStyles.popup);
+        EditorGUILayout.Separator();
+
+        groundInDirection = (DirectionEnum)EditorGUILayout.EnumPopup(new GUIContent("Ground Direction", "The direction in world space the objects will be grounded."), groundInDirection, EditorStyles.popup);
+
+        if(EditorGUI.EndChangeCheck())
+        {
+            UpdatePreviews();
+        }
+
+        EditorGUILayout.Separator();
+
+        if (GUILayout.Button(new GUIContent("Ground Objects", "Grounds all selected objects that can be grounded in the specified direction.")))
+        {
+            GroundObjects();
+        }
+    }
+
+    private void OnSceneGUI(SceneView sceneView)
+    {
+        Event e = Event.current;
+
+        switch (e.type)
+        {
+            case EventType.MouseDrag:
+
+                if (selectedObjects.Length > 0)
+                {
+                    UpdatePreviews();
+                }
+                break;
+
+                    default:
+                break;
+        }
     }
 
     private void OnSelectionChange()
     {
-        objects = Selection.gameObjects;
+        selectedObjects = Selection.gameObjects;
+
+        UpdatePreviews();
+    }
+
+    private void UpdatePreviews()
+    {
+        groundedPositions = new Vector3[selectedObjects.Length];
+        groundedRotations = new Quaternion[selectedObjects.Length];
+        groundedMeshes = new Mesh[selectedObjects.Length];
+        foundGround = new bool[selectedObjects.Length];
+
+        for (int i = 0; i < selectedObjects.Length; i++)
+        {
+            foundGround[i] = false;
+
+            RaycastHit hit;
+
+            if (Physics.Raycast(selectedObjects[i].transform.position, groundDir, out hit, Mathf.Infinity))
+            {
+                if (hit.collider != null && hit.collider.gameObject != selectedObjects[i])
+                {
+                    foundGround[i] = true;
+                    Quaternion oldRot= selectedObjects[i].transform.rotation;
+                    selectedObjects[i].transform.up = hit.normal;
+
+                    groundedRotations[i] = selectedObjects[i].transform.rotation;
+                    groundedPositions[i] = hit.point;
+
+                    if (corectPositionsToGrid && GridTool.EnableGridTool)
+                    {
+                        Vector3 onGrid = GridTool.SnapToGrid(groundedPositions[i]);
+
+                        onGrid.y = groundedPositions[i].y;
+                        groundedPositions[i] = onGrid;
+
+                        if (Physics.Raycast(groundedPositions[i] - groundDir, groundDir, out hit, 2))
+                        {
+                            if (hit.collider != null && hit.collider.gameObject != selectedObjects[i])
+                            {
+                                selectedObjects[i].transform.up = hit.normal;
+                                groundedRotations[i] = selectedObjects[i].transform.rotation;
+                            }
+                        }
+                    }
+
+                    selectedObjects[i].transform.rotation = oldRot;
+
+                    try
+                    {
+                        groundedMeshes[i] = selectedObjects[i].GetComponent<MeshFilter>().sharedMesh;
+                    }
+                    catch
+                    {
+                        groundedMeshes[i] = new Mesh();
+                    }
+                }
+            }
+        }
     }
 
     private void GroundObjects()
     {
+        Vector3[] tempArray = new Vector3[3];
+        Debug.Log(tempArray[1]);
 
+        if (selectedObjects != null && groundedPositions != null && groundedRotations != null)
+        {
+            for (int i = 0; i < selectedObjects.Length; i++)
+            {
+                if (foundGround[i])
+                {
+                    selectedObjects[i].transform.position = groundedPositions[i];
+                }
+
+                if (foundGround[i])
+                {
+                    selectedObjects[i].transform.rotation = groundedRotations[i];
+                }
+            }            
+        }
+
+        if (deselectObjectsOnFinish)
+        {
+            Selection.objects = new Object[0];
+        }
+    }
+
+    private void ClearArrays()
+    {
+        selectedObjects = null;
+        groundedPositions = null;
+        groundedRotations = null;
+        groundedMeshes = null;
     }
 
     [DrawGizmo(GizmoType.NotInSelectionHierarchy)]
     private static void DrawGizmos(Transform transform, GizmoType gizmoType)
     {
-        if (showGroundedPreview)
+        if (selectedObjects != null && showGroundedPreview)
         {
-            
-
-            for (int i = 0; i < objects.Length; i++)
+            for (int i = 0; i < selectedObjects.Length; i++)
             {
-                RaycastHit hit;
-
-                if (Physics.Raycast(new Ray(objects[i].transform.position, Vector3.down), out hit, Mathf.Infinity))
+                if (groundedMeshes != null && groundedMeshes[i] != null)
                 {
-                    if (hit.transform.gameObject != objects[i])
+                    Gizmos.color = new Color(1, 0, 0, 0.3f);
+                    Gizmos.DrawLine(selectedObjects[i].transform.position, groundedPositions[i]);
+
+                    if (groundedMeshes[i] == new Mesh())
                     {
-                        Mesh mesh = null;
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawWireSphere(groundedPositions[i], noMeshCircleRadius);
 
-                        try
-                        {
-                            Debug.Log("SDASDSAD");
+                        Gizmos.color = new Color(Color.yellow.r, Color.yellow.g, Color.yellow.b, 0.3f);
+                        Gizmos.DrawSphere(groundedPositions[i], noMeshCircleRadius);
+                    }
+                    else
+                    {
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawWireMesh(groundedMeshes[i], groundedPositions[i], groundedRotations[i]);
 
-                            mesh = objects[i].GetComponent<MeshFilter>().sharedMesh;
-
-                            Gizmos.color = new Color(1, 0, 0, 0.5f);
-                            Gizmos.DrawLine(objects[i].transform.position, hit.point);
-
-                            Gizmos.color = new Color(0, 0, 0, 0.5f);
-                            Gizmos.DrawMesh(mesh, hit.point, Quaternion.LookRotation(objects[i].transform.forward ,hit.normal));
-                        }
-                        catch
-                        {
-                            Debug.Log("SDASDSAD");
-
-                            Gizmos.color = new Color(1, 0, 0, 0.5f);
-                            Gizmos.DrawLine(objects[i].transform.position, hit.point);
-
-                            Gizmos.color = new Color(0, 0, 0, 0.5f);
-                            Gizmos.DrawSphere(hit.point, 1);
-                        }
+                        Gizmos.color = new Color(Color.yellow.r, Color.yellow.g, Color.yellow.b, 0.3f);
+                        Gizmos.DrawMesh(groundedMeshes[i], groundedPositions[i], groundedRotations[i]);
                     }
                 }
-                
             }
         }
     }
