@@ -129,23 +129,31 @@ public class GridTool
     /// </summary>
     public static void OnToggle()
     {
-        // If enableGridTool is true...
-        if (enableGridTool)
+        // If enableGridTool is false...
+        if (!enableGridTool)
         {
             //... subscribe to some delegates and update the grid's lines.
             SceneView.onSceneGUIDelegate += OnSceneGUI;
             EditorApplication.update += Update;
-            Selection.selectionChanged += UpdateGridLines;
+            Selection.selectionChanged += OnSelectionChange;
+
+            enableGridTool = !enableGridTool;
+
             UpdateGridLines();
+            UpdateSelectionArrays();
         }
-        // If enableGridTool is false...
+        // If enableGridTool is true...
         else
         {
             //... unsubscribe form some delegates and clear the grid's lines.
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             EditorApplication.update -= Update;
-            Selection.selectionChanged -= UpdateGridLines;
+            Selection.selectionChanged -= OnSelectionChange;
+
             ClearGridLines();
+            UpdateSelectionArrays();
+
+            enableGridTool = !enableGridTool;
         }
     }
 
@@ -244,6 +252,9 @@ public class GridTool
                         }
                     }
                 }
+
+                // Sets the oldPos to the current position of the active transform
+                oldPosition = activeTrans.position;
             }
         }
     }
@@ -274,6 +285,7 @@ public class GridTool
 
             // If the current event is a MouseDown event...
             case EventType.MouseDown:
+
                 // If an object with a transform component is selected...
                 if (Selection.activeTransform)
                 {
@@ -528,26 +540,19 @@ public class GridTool
             gridSize = 100 * _incrementSize;
 
             // Clears all the lists with lines. 
-            xzLinesX.Clear();
-            xzLinesZ.Clear();
-
-            xyLinesX.Clear();
-            xyLinesY.Clear();
-
-            yzLinesY.Clear();
-            yzLinesZ.Clear();
+            ClearGridLines();
 
             // If _useSelectionPosition is true and an object with a transform component is selected...
             if (_useSelectionPosition && Selection.activeTransform)
             {
-                // The position of the grid is set and the _gridOffset is added.
-                position = SnapToGrid(Selection.activeTransform.position) /*+ _gridOffset*/;
+                // The position of the grid is set.
+                position = SnapToGrid(Selection.activeTransform.position);
             }
             // If _useSelectionPosition is false or if no object with a transform component is selected...
             else
             {
-                // The position of the grid is set to Vector3.zero + the offset.
-                position = Vector3.zero /*+ _gridOffset*/;
+                // The position of the grid is set to Vector3.zero.
+                position = Vector3.zero;
             }
 
             // Each line is adde to the correct list.
@@ -618,9 +623,9 @@ public class GridTool
     {
         return new Vector3
         (
-        _incrementSize * Mathf.Round(position.x - _gridOffset.x / _incrementSize) + _gridOffset.x,
-        _incrementSize * Mathf.Round(position.y - _gridOffset.y / _incrementSize) + _gridOffset.y,
-        _incrementSize * Mathf.Round(position.z - _gridOffset.z / _incrementSize) + _gridOffset.z
+        _incrementSize * Mathf.Round((position.x - _gridOffset.x) / _incrementSize) + _gridOffset.x,
+        _incrementSize * Mathf.Round((position.y - _gridOffset.y) / _incrementSize) + _gridOffset.y,
+        _incrementSize * Mathf.Round((position.z - _gridOffset.z) / _incrementSize) + _gridOffset.z
         );
     }
 
@@ -638,21 +643,21 @@ public class GridTool
         if (oldPosition.x != activeTransform.position.x)
         {
             // Snap the x-component of the snapPos vector to the grid.
-            snapPos.x = _incrementSize * Mathf.Round(activeTransform.position.x - _gridOffset.x / _incrementSize) + _gridOffset.x;
+            snapPos.x = _incrementSize * Mathf.Round((activeTransform.position.x - _gridOffset.x) / _incrementSize) + _gridOffset.x;
         }
 
         // If the y-position of the active transform is not the old y-Position... 
         if (oldPosition.y != activeTransform.position.y)
         {
             // Snap the y-component of the snapPos vector to the grid.
-            snapPos.y = _incrementSize * Mathf.Round(activeTransform.position.y - _gridOffset.y / _incrementSize) + _gridOffset.y;
+            snapPos.y = _incrementSize * Mathf.Round((activeTransform.position.y - _gridOffset.y) / _incrementSize) + _gridOffset.y;
         }
 
         // If the z-position of the active transform is not the old z-Position... 
         if (oldPosition.z != activeTransform.position.z)
         {
             // Snap the z-component of the snapPos vector to the grid.
-            snapPos.z = _incrementSize * Mathf.Round(activeTransform.position.z - _gridOffset.z / _incrementSize) + _gridOffset.z;
+            snapPos.z = _incrementSize * Mathf.Round((activeTransform.position.z - _gridOffset.z) / _incrementSize) + _gridOffset.z;
         }
 
         // Returns snapPos.

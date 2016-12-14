@@ -4,11 +4,6 @@ using UnityEditor;
 [InitializeOnLoad]
 public class GridToolGUI
 {
-    // The start index of the Snap Size dropdown menu.
-    private static int incrementIndex = 3;
-    // The options of the Snap Size dropDown menu.
-    private static string[] incrementOptions = { "0.1", "0.25", "0.5", "1", "2", "3", "4", "5", "10" };
-
     private static GUISkin guiSkin;
 
     private static Texture toggleGridTexture;
@@ -28,9 +23,6 @@ public class GridToolGUI
     [MenuItem("ZoonTools/Toggle Grid", false, 1)]
     static void ToggleGrid()
     {
-        // Toggles the value of the variable enableGridTool.
-        GridTool.EnableGridTool = !GridTool.EnableGridTool;
-
         // Calls the OnToggle methods in both this class and the GridTool class.
         OnToggle();
         GridTool.OnToggle();
@@ -44,13 +36,13 @@ public class GridToolGUI
     /// </summary>
     public static void OnToggle()
     {
-        // If the variable enableGridTool is true...
-        if (GridTool.EnableGridTool)
+        // If the variable enableGridTool is false...
+        if (!GridTool.EnableGridTool)
         {
             //... subscribe the method OnSceneGUI to the SceneView.onSceneGUIDelegate
             SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
-        // If the variable enableGridTool is false...
+        // If the variable enableGridTool is true...
         else
         {
             //... unsubscribe the method OnSceneGUI form the SceneView.onSceneGUIDelegate
@@ -169,54 +161,15 @@ public class GridToolGUI
         // Defines the x position of the dorpdown menu
         int snapSizeX = 285;
 
-        GUIStyle dropDownStyle = new GUIStyle(EditorStyles.toolbarDropDown);
-        dropDownStyle.fixedHeight = 15;
-
         GUI.Label(new Rect(snapSizeX, 5, 60, 20), "Snap size", EditorStyles.label);
-
-        GUILayout.BeginArea(new Rect(snapSizeX, 20, 60, dropDownStyle.fixedHeight));
-
         EditorGUI.BeginChangeCheck();
 
-        incrementIndex = EditorGUILayout.Popup(incrementIndex, incrementOptions, dropDownStyle);
+        GridTool.IncrementSize = EditorGUI.FloatField(new Rect(285, 20, 60, 15), Mathf.Abs(GridTool.IncrementSize));
 
         if (EditorGUI.EndChangeCheck())
         {
-            switch (incrementIndex)
-            {
-                case 0:
-                    GridTool.IncrementSize = 0.1f;
-                    break;
-                case 1:
-                    GridTool.IncrementSize = 0.25f;
-                    break;
-                case 2:
-                    GridTool.IncrementSize = 0.5f;
-                    break;
-                case 3:
-                    GridTool.IncrementSize = 1f;
-                    break;
-                case 4:
-                    GridTool.IncrementSize = 2f;
-                    break;
-                case 5:
-                    GridTool.IncrementSize = 3f;
-                    break;
-                case 6:
-                    GridTool.IncrementSize = 4f;
-                    break;
-                case 7:
-                    GridTool.IncrementSize = 5f;
-                    break;
-                case 8:
-                    GridTool.IncrementSize = 10f;
-                    break;
-            }
-
             GridTool.UpdateGridLines();
         }
-
-        GUILayout.EndArea();
         #endregion
 
         // Starts a change check

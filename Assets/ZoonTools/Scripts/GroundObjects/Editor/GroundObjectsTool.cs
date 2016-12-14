@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 public enum DirectionEnum { Down, Up, Left, Right, Forward, Back }
 
@@ -211,21 +210,22 @@ public class GroundObjectsTool : EditorWindow
 
     private void GroundObjects()
     {
-        Vector3[] tempArray = new Vector3[3];
-        Debug.Log(tempArray[1]);
-
         if (selectedObjects != null && groundedPositions != null && groundedRotations != null)
         {
             for (int i = 0; i < selectedObjects.Length; i++)
             {
+                Undo.RecordObject(selectedObjects[i].transform, "ObjectGrounded" + i);
+
                 if (foundGround[i])
                 {
                     selectedObjects[i].transform.position = groundedPositions[i];
+                    EditorUtility.SetDirty(selectedObjects[i].transform);
                 }
 
                 if (foundGround[i])
                 {
                     selectedObjects[i].transform.rotation = groundedRotations[i];
+                    EditorUtility.SetDirty(selectedObjects[i].transform);
                 }
             }            
         }
