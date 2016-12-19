@@ -477,39 +477,42 @@ public class GridTool
         {
             #region Draw Start Position
             // If an object with a transform component is selected and oldPositin is not the same as the current position...
-            if (Selection.activeTransform && oldPosition != Selection.activeTransform.position)
+            if (selectedGameObjects.Length > 0)
             {
-                // Get the mesh component of the object and save it as a local variable.
-                Mesh mesh;
-
-                try
+                for (int i = 0; i < selectedGameObjects.Length; i++)
                 {
-                    mesh = Selection.activeGameObject.GetComponent<MeshFilter>().sharedMesh;
-                }
-                catch
-                {
-                    mesh = null;
-                }
+                    // Get the mesh component of the object and save it as a local variable.
+                    Mesh mesh;
 
-                // If the local mesh variable is not null
-                if (mesh != null)
-                {
-                    // Draw a 'ghost' of the object at the starting position.
-                    Gizmos.color = new Color(1, 1, 0, 0.3f);
-                    Gizmos.DrawMesh(mesh, startPosition);
+                    try
+                    {
+                        mesh = selectedGameObjects[i].GetComponent<MeshFilter>().sharedMesh;
+                    }
+                    catch
+                    {
+                        mesh = null;
+                    }
 
-                    Gizmos.color = new Color(1, 1, 0, 1f);
-                    Gizmos.DrawWireMesh(mesh, startPosition);
-                }
-                // If the local mesh variable is null
-                else
-                {
-                    // Draw a 'ghost' of a sphere at the starting position.
-                    Gizmos.color = new Color(1, 1, 0, 0.3f);
-                    Gizmos.DrawSphere(startPosition, 0.25f);
+                    // If the local mesh variable is not null
+                    if (mesh != null)
+                    {
+                        // Draw a 'ghost' of the object at the starting position.
+                        Gizmos.color = new Color(1, 1, 0, 0.3f);
+                        Gizmos.DrawMesh(mesh, startPosition + selectedRelativePositions[i]);
 
-                    Gizmos.color = new Color(1, 1, 0, 1f);
-                    Gizmos.DrawWireSphere(startPosition, 0.25f);
+                        Gizmos.color = new Color(1, 1, 0, 1f);
+                        Gizmos.DrawWireMesh(mesh, startPosition + selectedRelativePositions[i]);
+                    }
+                    // If the local mesh variable is null
+                    else
+                    {
+                        // Draw a 'ghost' of a sphere at the starting position.
+                        Gizmos.color = new Color(1, 1, 0, 0.3f);
+                        Gizmos.DrawSphere(startPosition + selectedRelativePositions[i], 0.25f);
+
+                        Gizmos.color = new Color(1, 1, 0, 1f);
+                        Gizmos.DrawWireSphere(startPosition + selectedRelativePositions[i], 0.25f);
+                    }
                 }
             }
             #endregion
