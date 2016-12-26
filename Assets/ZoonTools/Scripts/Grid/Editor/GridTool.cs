@@ -44,6 +44,7 @@ public class GridTool
 
     private static GameObject[] selectedGameObjects = new GameObject[0];
     private static Vector3[] selectedRelativePositions = new Vector3[0];
+    private static Quaternion[] selectedRotations = new Quaternion[0];
 
     #region Properties
     public static bool EnableGridTool
@@ -280,6 +281,7 @@ public class GridTool
 
                 // Updates the grid's lines.
                 UpdateGridLines();
+                UpdateSelectionArrays();
 
                 break;
 
@@ -307,7 +309,7 @@ public class GridTool
                 {
                     // Update the grid's lines.
                     UpdateGridLines();
-
+                    UpdateSelectionArrays();
                 }
                 break;
         }
@@ -498,10 +500,10 @@ public class GridTool
                     {
                         // Draw a 'ghost' of the object at the starting position.
                         Gizmos.color = new Color(1, 1, 0, 0.3f);
-                        Gizmos.DrawMesh(mesh, startPosition + selectedRelativePositions[i]);
+                        Gizmos.DrawMesh(mesh, startPosition + selectedRelativePositions[i], selectedRotations[i]);
 
                         Gizmos.color = new Color(1, 1, 0, 1f);
-                        Gizmos.DrawWireMesh(mesh, startPosition + selectedRelativePositions[i]);
+                        Gizmos.DrawWireMesh(mesh, startPosition + selectedRelativePositions[i], selectedRotations[i]);
                     }
                     // If the local mesh variable is null
                     else
@@ -598,6 +600,12 @@ public class GridTool
         {
             // Sets the two arrays for used for snapping.
             selectedGameObjects = Selection.gameObjects;
+            selectedRotations = new Quaternion[selectedGameObjects.Length];
+
+            for (int i = 0; i < selectedGameObjects.Length; i++)
+            {
+                selectedRotations[i] = selectedGameObjects[i].transform.rotation;
+            }
 
             if (selectedGameObjects != null)
             {
@@ -608,11 +616,10 @@ public class GridTool
                 selectedRelativePositions = new Vector3[0];
             }
 
-
             // Calculates the position of all the selected object relative to the active selection and saves it in an array.
-            for (int i = 0; i < selectedRelativePositions.Length; i++)
+            for (int i = 0; i < selectedGameObjects.Length; i++)
             {
-                selectedRelativePositions[i] = Selection.activeTransform.InverseTransformPoint(selectedGameObjects[i].transform.position);
+                selectedRelativePositions[i] = selectedGameObjects[i].transform.position - Selection.activeTransform.position;
             }
         }
     }

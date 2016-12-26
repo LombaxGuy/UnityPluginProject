@@ -123,31 +123,31 @@ public class GridToolGUI
         EditorGUI.BeginChangeCheck();
 
         // Creates toggle buttons for each of the grid settings.
-        GridTool.ShowGrid = CreateGUIToggle(new Rect(5, 5, 30, 30), GridTool.ShowGrid, toggleGridTexture, "Toggle grid.");
+        GridTool.ShowGrid = CreateGUIToggle(new Rect(5, 5, 30, 30), GridTool.ShowGrid, toggleGridTexture, "Draw grid.");
 
-        GridTool.XYGrid = CreateGUIToggle(new Rect(55, 5, 30, 30), GridTool.XYGrid, toggleXYGridTexture, "Toggle grid on the XY-plane.");
-        GridTool.XZGrid = CreateGUIToggle(new Rect(90, 5, 30, 30), GridTool.XZGrid, toggleXZGridTexture, "Toggle grid on the XZ-plane.");
-        GridTool.YZGrid = CreateGUIToggle(new Rect(125, 5, 30, 30), GridTool.YZGrid, toggleYZGridTexture, "Toggle grid on the YZ-plane.");
+        GridTool.XYGrid = CreateGUIToggle(new Rect(55, 5, 30, 30), GridTool.XYGrid, toggleXYGridTexture, "Draw grid on the XY-plane.");
+        GridTool.XZGrid = CreateGUIToggle(new Rect(90, 5, 30, 30), GridTool.XZGrid, toggleXZGridTexture, "Draw grid on the XZ-plane.");
+        GridTool.YZGrid = CreateGUIToggle(new Rect(125, 5, 30, 30), GridTool.YZGrid, toggleYZGridTexture, "Draw grid on the YZ-plane.");
 
         // Creates a line between the grid settings and the snap settings.
         CreateGUILine(new Rect(164, 0, 2, 40));
 
         // Creates toggle buttons for each of the snap settings.
-        GridTool.SnapObjectToGrid = CreateGUIToggle(new Rect(175, 5, 30, 30), GridTool.SnapObjectToGrid, toggleSnapObjectToGridTexture, "Toggle grid snapping. When this is turned on objectes moved within the sceneview will snap to the grid.");
-        GridTool.SnapAxisOnly = CreateGUIToggle(new Rect(210, 5, 30, 30), GridTool.SnapAxisOnly, toggleSnapAxisOnlyTexture, "Toggle axis snapping. When this is turned on objectes moved within the sceneview will only snap to the axis the object is being moved on.");
-        GridTool.AllignAllSelectedWithGrid = CreateGUIToggle(new Rect(245, 5, 30, 30), GridTool.AllignAllSelectedWithGrid, toggleIndividualSnappingTexture, "Toggle individual snapping. If multiple objects are moved at the same time each individual object will snap to the nearest snapping point.");
+        GridTool.SnapObjectToGrid = CreateGUIToggle(new Rect(175, 5, 30, 30), GridTool.SnapObjectToGrid, toggleSnapObjectToGridTexture, "Snap to grid. When this is turned on objectes moved within the scene view will snap to the grid.");
+        GridTool.SnapAxisOnly = CreateGUIToggle(new Rect(210, 5, 30, 30), GridTool.SnapAxisOnly, toggleSnapAxisOnlyTexture, "Axis snapping. When this is turned on objectes moved within the scene view will only snap to the axis the object is being moved on.");
+        GridTool.AllignAllSelectedWithGrid = CreateGUIToggle(new Rect(245, 5, 30, 30), GridTool.AllignAllSelectedWithGrid, toggleIndividualSnappingTexture, "Individual snapping. If multiple objects are moved at the same time each individual object will snap to the nearest snapping point.");
 
         // Creates a line between the snap settings and the grid position settings.
         CreateGUILine(new Rect(354, 0, 2, 40));
 
         // Creates a toggle button for a grid position setting.
-        GridTool.UseSelectionPosition = CreateGUIToggle(new Rect(365, 5, 30, 30), GridTool.UseSelectionPosition, toggleUseSelectionPositionTexture, "Toggle repositioning of the grid. When this is turned on the grid will change position based on the selected object.");
+        GridTool.UseSelectionPosition = CreateGUIToggle(new Rect(365, 5, 30, 30), GridTool.UseSelectionPosition, toggleUseSelectionPositionTexture, "Dynamic grid. When this is turned on the grid will change position based on the selected object.");
 
         // Creates a line between the grid position settings and other settings.
         CreateGUILine(new Rect(614, 0, 2, 40));
 
         // Creates a toggle button for the show start position setting.
-        GridTool.ShowStartPosition = CreateGUIToggle(new Rect(625, 5, 30, 30), GridTool.ShowStartPosition, toggleShowStartPositionTexture, "Toggle show start position. When this is turned on objects moved within the scene view will leave a 'ghost' at their initial position. The 'ghost' is removed when the mouse button is released.");
+        GridTool.ShowStartPosition = CreateGUIToggle(new Rect(625, 5, 30, 30), GridTool.ShowStartPosition, toggleShowStartPositionTexture, "Show start positions. When this is turned on objects moved within the scene view will leave a 'ghost' at their initial position. The 'ghost' is removed when the mouse button is released.");
 
         // If any of the above setting has been changed...
         if (EditorGUI.EndChangeCheck())
@@ -157,11 +157,10 @@ public class GridToolGUI
             GridTool.UpdateSelectionArrays();
         }
 
-        #region Snap size dropdown
         // Defines the x position of the dorpdown menu
         int snapSizeX = 285;
 
-        GUI.Label(new Rect(snapSizeX, 5, 60, 20), "Snap size", EditorStyles.label);
+        GUI.Label(new Rect(snapSizeX, 5, 60, 20), "Cell size", EditorStyles.label);
         EditorGUI.BeginChangeCheck();
 
         GridTool.IncrementSize = EditorGUI.FloatField(new Rect(285, 20, 60, 15), Mathf.Abs(GridTool.IncrementSize));
@@ -170,7 +169,6 @@ public class GridToolGUI
         {
             GridTool.UpdateGridLines();
         }
-        #endregion
 
         // Starts a change check
         EditorGUI.BeginChangeCheck();
