@@ -4,6 +4,7 @@ using System.Collections;
 
 public class ObjectPlacerTool : EditorWindow
 {
+    // Private enum used for choosing the snapping plane
     private enum SnapDirections { XY, XZ, YZ };
 
     private GameObject selectedObject = null;
@@ -24,8 +25,11 @@ public class ObjectPlacerTool : EditorWindow
     private float localYRotation = 0;
 
     private bool snapToGrid = false;
-    private SnapDirections snappingPlane = SnapDirections.YZ;
+    private SnapDirections snappingPlane = SnapDirections.XZ;
 
+    /// <summary>
+    /// Creates a menu point and opens the window when the menu point is clicked.
+    /// </summary>
     [MenuItem("ZoonTools/Object Placer", false, 102)]
     static void Init()
     {
@@ -33,38 +37,56 @@ public class ObjectPlacerTool : EditorWindow
         window.Show();
     }
 
+    /// <summary>
+    /// Called when the window is opened.
+    /// </summary>
     private void OnEnable()
     {
+        // Subscribe the method OnSceneGUI to the SceneView.onSceneGUIDelegate delegate.
         SceneView.onSceneGUIDelegate += OnSceneGUI;
     }
 
+    /// <summary>
+    /// Called when the window is closed.
+    /// </summary>
     private void OnDisable()
     {
+        // Unsubscribes the method OnSceneGUI from the SceneView.onSceneGUIDelegate delegate.
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
         placementEnabled = false;
     }
 
+    /// <summary>
+    /// Used to handle events in the sceneview.
+    /// </summary>
     private void OnSceneGUI(SceneView sceneView)
     {
+        // The current event
         Event e = Event.current;
 
+        // The mouse position on the screne to a world ray.
         Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
 
+        // If placement is enabled...
         if (placementEnabled)
         {
+            //... and the left mouse button is pressed...
             if (e.type == EventType.MouseDown && e.button == 0)
             {
+                //... Place an object
                 PlaceObject();
 
+                // Create a new random rotation if randomize rotation is active.
                 if (randomizeLocalYRotation)
                 {
                     currentRandomRotation = Random.Range(0, 360);
-                    e.Use();
 
+                    // Updates the preview
                     UpdatePreview(ray);
                 }
             }
 
+            // If the mouse is moved the preview is updated
             if (e.type == EventType.MouseMove)
             {
                 UpdatePreview(ray);
@@ -72,16 +94,23 @@ public class ObjectPlacerTool : EditorWindow
         }
     }
 
+    /// <summary>
+    /// Updates the preview ghost.
+    /// </summary>
+    /// <param name="ray">Mouse position to world ray.</param>
     private void UpdatePreview(Ray ray)
     {
+        // Repaints the sceneview.
         SceneView.RepaintAll();
 
         RaycastHit hit;
 
+        // If the ray hits anything in the direction the mouse was pointing
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
             mousePosition = hit.point;
 
+            // If the grid is enabled and snapToGrid is active
             if (GridTool.EnableGridTool && GridTool.SnapObjectToGrid && snapToGrid)
             {
                 #region Grid Snapping
@@ -178,6 +207,10 @@ public class ObjectPlacerTool : EditorWindow
         }
     }
 
+    /// <summary>
+    /// Calculates the rotation of the object.
+    /// </summary>
+    /// <param name="hit">The raycast hit under the object.</param>
     private void CalculateRotation(RaycastHit hit)
     {
         Quaternion originalRotation = selectedObject.transform.rotation;
@@ -202,6 +235,9 @@ public class ObjectPlacerTool : EditorWindow
         selectedObject.transform.rotation = originalRotation;
     }
 
+    /// <summary>
+    /// Main method. Executes when the left mouse button is clicked in the sceneview and enablePlacement is true.
+    /// </summary>
     private void PlaceObject()
     {
         GameObject obj = (GameObject)Instantiate(selectedObject, previewPosition, Quaternion.identity);
@@ -212,11 +248,17 @@ public class ObjectPlacerTool : EditorWindow
         Undo.RegisterCreatedObjectUndo(obj, "Undo placed object.");
     }
 
+    /// <summary>
+    /// Updates the window.
+    /// </summary>
     private void OnInspectorUpdate()
     {
         Repaint();
     }
 
+    /// <summary>
+    /// Draws the GUI in the editor window. Buttons, textfields, dorpdown menues etc. 
+    /// </summary>
     private void OnGUI()
     {
         #region Object
@@ -319,6 +361,9 @@ public class ObjectPlacerTool : EditorWindow
         #endregion
     }
 
+    /// <summary>
+    /// Draws the previews as Gizmos.
+    /// </summary>
     [DrawGizmo(GizmoType.NotInSelectionHierarchy)]
     private static void CustomGizmo(Transform objectTransform, GizmoType gizmoType)
     {
