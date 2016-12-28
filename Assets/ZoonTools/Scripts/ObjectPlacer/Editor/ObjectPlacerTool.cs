@@ -22,7 +22,7 @@ public class ObjectPlacerTool : EditorWindow
     private bool keepNativeRotation = false;
     private bool randomizeLocalYRotation = false;
     private float currentRandomRotation = 0;
-    private float localYRotation = 0;
+    private Vector3 localRotation = Vector3.zero;
 
     private bool snapToGrid = false;
     private SnapDirections snappingPlane = SnapDirections.XZ;
@@ -229,7 +229,7 @@ public class ObjectPlacerTool : EditorWindow
             // If none of the above is true the object will get the specified local y rotation. This is by default set to 0.
             else
             {
-                previewRotation = selectedObject.transform.rotation * Quaternion.Euler(0, localYRotation, 0);
+                previewRotation = selectedObject.transform.rotation * Quaternion.Euler(localRotation.x, localRotation.y, localRotation.z);
             }
         }
     }
@@ -264,7 +264,7 @@ public class ObjectPlacerTool : EditorWindow
             // Same as with randomizedLocalYRotation but with a fixed value instead of a random value.
             selectedObject.transform.rotation = previewRotation;
             selectedObject.transform.up = hit.normal;
-            previewRotation = selectedObject.transform.rotation * Quaternion.Euler(0, localYRotation, 0);
+            previewRotation = selectedObject.transform.rotation * Quaternion.Euler(localRotation.x, localRotation.y, localRotation.z);
         }
 
         // The selected objects rotation is reset back to the original rotation.
@@ -347,7 +347,7 @@ public class ObjectPlacerTool : EditorWindow
         {
             // randomizeLocalYRotation and localYRotation is reset to false and 0 respectivly.
             randomizeLocalYRotation = false;
-            localYRotation = 0;
+            localRotation = Vector3.zero;
         }
 
         // Stats a disabled group with keepNativeRotation as control. 
@@ -359,7 +359,7 @@ public class ObjectPlacerTool : EditorWindow
         if (randomizeLocalYRotation)
         {
             // localYRotation is reset to 0.
-            localYRotation = 0;
+            localRotation = Vector3.zero;
         }
 
         // Ends the disabled group.
@@ -369,7 +369,7 @@ public class ObjectPlacerTool : EditorWindow
         EditorGUI.BeginDisabledGroup(keepNativeRotation || randomizeLocalYRotation);
 
         // Creates a float field for the localYRotation variable.
-        localYRotation = EditorGUILayout.FloatField("Local Y-angle: ", localYRotation);
+        localRotation = EditorGUILayout.Vector3Field("Local rotation: ", localRotation);
 
         // Ends the disabled group.
         EditorGUI.EndDisabledGroup();
